@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operação Condicional – 2 Painéis</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a3d62">
+
+<style>
+body{font-family:Arial;background:#f0f0f0;margin:0;}
+.topoIdioma{display:flex;justify-content:center;gap:20px;padding:15px;background:#222;}
+.idiomaBtnRound{width:80px;height:80px;border-radius:50%;border:none;background:#009c3b;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold;font-size:14px;transition:0.25s;box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+.flagRound{width:34px;height:22px;object-fit:cover;border-radius:4px;margin-bottom:4px;}
+.idiomaBtnRound:hover{transform:scale(1.1);background:#00b347;}
+.idiomaAtivo{background:#ffdf00;color:#002776;box-shadow:0 0 0 4px white inset;}
+#btnPT.idiomaAtivo{box-shadow:none;}
+.painel-container{display:flex;height:100vh;}
+.painel{background:#fff;padding:20px;margin:10px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);flex:1;overflow:auto;}
+label,input,select,button{width:100%;padding:10px;margin-bottom:12px;}
+button{background:#28a745;color:white;font-weight:bold;}
+.infoBox{background:#fff3cd;border-left:6px solid #ffcc00;padding:12px;border-radius:6px;margin-top:10px;font-size:14px;line-height:1.5;}
+.boxResultado{background:#eaf5e5;padding:12px;margin-top:12px;border-radius:6px;font-weight:bold;}
+@media(max-width:768px){.painel-container{flex-direction:column;}}
+</style>
+</head>
+
+<body>
+
+<div class="topoIdioma">
+<button id="btnPT" class="idiomaBtnRound" onclick="setIdioma('pt')">
+<img src="img/br.png" class="flagRound"><span>PT</span>
+</button>
+<button id="btnEN" class="idiomaBtnRound" onclick="setIdioma('en')">
+<img src="img/us.png" class="flagRound"><span>EN</span>
+</button>
+<button id="btnES" class="idiomaBtnRound" onclick="setIdioma('es')">
+<img src="img/es.png" class="flagRound"><span>ES</span>
+</button>
+</div>
+
+<div class="painel-container">
+
+<div class="painel">
+<h2 id="titulo"></h2>
+<label id="lProf"></label>
+<input type="number" id="Prof">
+<label id="lQ"></label>
+<input type="number" id="Q">
+<label id="lTi"></label>
+<input type="number" id="Ti">
+<label id="lD"></label>
+<input type="number" id="D">
+<label id="lT"></label>
+<input type="number" id="T">
+<label id="lAc"></label>
+<input type="number" id="Ac">
+<label id="lCond"></label>
+<select id="condicaoSelect">
+<option value="Temp25">25°C</option>
+<option value="Temp30">5°C</option>
+<option value="Temp35">35°C</option>
+</select>
+<button onclick="calcularCondicional()" id="btnCalc"></button>
+<button onclick="toggleInfo()" id="btnInfo">INFO</button>
+<div id="infoBox" class="infoBox" style="display:none;"></div>
+</div>
+
+<div class="painel">
+<h2 id="resTitulo"></h2>
+<div class="boxResultado" id="resultado1">...</div>
+<div class="boxResultado" id="resultado2">...</div>
+<div class="boxResultado" id="resultado3">...</div>
+</div>
+
+</div>
+
+<script>
+let idioma="pt";
+const textos={
+pt:{titulo:"Cálculo das Temperaturas no Aquecimento HCR",Prof:"Profundidade (m) ANM:",Q:"Vazão fluido quente (bbl/min):",Ti:"Temperatura inicial (°C):",D:"Diâmetro tubo (m): 1 polegada≈0.0254m",T:"Tempo fluxo (min):",Ac:"Massa ANM (kg):",Cond:"Temperatura de Superfície:",Calc:"Calcular",Res:"Resultados",r1:"Temperatura fundo do mar:",r2:"Temperatura fluido no HCR:",r3:"Temperatura bloco ANM:",erro:"ERRO: preencher todos os campos.",Info:"Este app é um modelo empírico e possui limitações."},
+en:{titulo:"Temperature Calculation – HCR Heating",Prof:"Sea Depth (m):",Q:"Flow rate (bbl/min):",Ti:"Water temperature (°C):",D:"Tube diameter (m):",T:"Flow time (min):",Ac:" Wet Xmas Treee mass (kg):",Cond:"Surface temperature:",Calc:"Calculate",Res:"Results",r1:"Sea bottom temperature:",r2:"Fluid temperature:",r3:"Wet Xmas Tree block temperature:",erro:"ERROR: fill all fields.",Info:"This app is based on an empirical model. Caution, mass in kg (1 kg~2.205lbs)"},
+es:{titulo:"Cálculo de Temperaturas – HCR",Prof:"Profundidad (m):",Q:"Caudal (bbl/min):",Ti:"Temperatura inicial (°C):",D:"Diámetro tubo (m):",T:"Tiempo flujo (min):",Ac:"Masa ANM (kg):",Cond:"Temperatura superficial:",Calc:"Calcular",Res:"Resultados",r1:"Temperatura fondo mar:",r2:"Temperatura fluido HCR:",r3:"Temperatura bloque ANM:",erro:"ERROR: complete todos los campos.",Info:"Aplicación basada en modelo empírico."}
+};
+
+function destacarBotao(id){document.querySelectorAll('.idiomaBtnRound').forEach(b=>b.classList.remove('idiomaAtivo'));document.getElementById(id).classList.add('idiomaAtivo');}
+
+function setIdioma(id){idioma=id;const t=textos[id];
+document.getElementById('titulo').innerText=t.titulo;
+document.getElementById('lProf').innerText=t.Prof;
+document.getElementById('lQ').innerText=t.Q;
+document.getElementById('lTi').innerText=t.Ti;
+document.getElementById('lD').innerText=t.D;
+document.getElementById('lT').innerText=t.T;
+document.getElementById('lAc').innerText=t.Ac;
+document.getElementById('lCond').innerText=t.Cond;
+document.getElementById('btnCalc').innerText=t.Calc;
+document.getElementById('resTitulo').innerText=t.Res;
+if(id==='pt')destacarBotao('btnPT');
+if(id==='en')destacarBotao('btnEN');
+if(id==='es')destacarBotao('btnES');}
+setIdioma('pt');
+
+function toggleInfo(){const box=document.getElementById('infoBox');if(box.style.display==='none'){box.style.display='block';box.innerHTML=textos[idioma].Info;}else{box.style.display='none';}}
+
+function calcularCondicional(){
+const p=parseFloat(document.getElementById('Prof').value);
+const q=parseFloat(document.getElementById('Q').value);
+const ti=parseFloat(document.getElementById('Ti').value);
+const d=parseFloat(document.getElementById('D').value);
+const t=parseFloat(document.getElementById('T').value);
+const ac=parseFloat(document.getElementById('Ac').value);
+if([p,q,ti,d,t,ac].some(isNaN)){document.getElementById('resultado1').innerText=textos[idioma].erro;return;}
+const temperaturas={Temp25:25,Temp30:5,Temp35:35};
+const ts=temperaturas[document.getElementById('condicaoSelect').value];
+const fundo=3.5+(ts-3.5)*Math.exp(-p/200);
+const fluido=fundo+(ti-fundo)*Math.exp(-0.019*d*p/2.64971/q);
+const bloco=(q*2.64971*t*60*fluido+ac*2*fundo)/(q*2.64971*t*60+ac*2);
+
+document.getElementById('resultado1').innerText=textos[idioma].r1+' '+fundo.toFixed(2)+' °C';
+document.getElementById('resultado2').innerText=textos[idioma].r2+' '+fluido.toFixed(2)+' °C';
+document.getElementById('resultado3').innerText=textos[idioma].r3+' '+bloco.toFixed(2)+' °C';}
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+ navigator.serviceWorker.register('service-worker.js')
+  .then(()=>console.log('Service Worker OK'))
+  .catch(err=>console.log('Erro SW:',err));
+}
+</script>
+
+</body>
+</html>
